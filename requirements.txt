@@ -1,0 +1,6 @@
+matplotlib
+numpy
+pywifi
+customtkinter
+tabulate
+bleak

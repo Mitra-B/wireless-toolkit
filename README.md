@@ -1,0 +1,89 @@
+# Wireless Toolkit
+
+Five small Python tools for analyzing wireless networks: Wi-Fi channel congestion, live link quality, path-loss modelling, Wi-Fi security auditing and Bluetooth Low Energy (BLE) distance estimation.
+
+Built as a Wireless Technologies mini-project. Each tool is a single, self-contained script in `src/`.
+
+## Tools
+
+| # | Script | What it does | Needs hardware? |
+|---|--------|--------------|-----------------|
+| 1 | `1_wifi_channel_analyzer.py` | Scans nearby access points, scores congestion on every 2.4 GHz and 5 GHz channel, plots live bar charts and recommends the best channel. | Wi-Fi adapter |
+| 2 | `2_wifi_link_quality_tracker.py` | CustomTkinter dashboard plotting live RSSI, gateway ping latency and packet loss. Mark locations while walking to find dead zones. | Wi-Fi adapter |
+| 3 | `3_path_loss_simulator.py` | Log-distance path loss model for 2.4 / 5 / 6 GHz with obstacle losses. Graphs signal decay and computes maximum coverage radius. | No |
+| 4 | `4_wifi_security_inspector.py` | Passive scan of nearby networks. Rates their encryption (Open, WEP, WPA, WPA2, TKIP vs AES) and prints an audit report. | Wi-Fi adapter |
+| 5 | `5_ble_device_finder.py` | Discovers nearby BLE devices and estimates distance from RSSI. | Bluetooth adapter |
+
+## Quick start
+
+```bash
+git clone https://github.com/<your-username>/wireless-toolkit.git
+cd wireless-toolkit
+pip install -r requirements.txt
+python src/3_path_loss_simulator.py --interactive
+```
+
+On Windows use `py` instead of `python` if `python` is not recognized. On Linux the Wi-Fi scanners (1, 2, 4) usually need `sudo`, and you may need `--break-system-packages` with pip.
+
+## Usage
+
+```bash
+python src/1_wifi_channel_analyzer.py
+python src/2_wifi_link_quality_tracker.py
+python src/3_path_loss_simulator.py --tx 20 --env indoor_nlos --obstacles concrete drywall
+python src/4_wifi_security_inspector.py --csv report.csv
+python src/5_ble_device_finder.py --time 10 --loop
+```
+
+### Path loss simulator options
+
+| Option | Meaning | Default |
+|--------|---------|---------|
+| `--tx` | Transmit power (dBm) | 20 |
+| `--env` | `free_space`, `open_office`, `indoor_los`, `indoor_nlos`, `dense_indoor` | `open_office` |
+| `--n` | Custom path-loss exponent (overrides `--env`) | - |
+| `--obstacles` | Any of `none drywall glass wood brick concrete` | none |
+| `--sensitivity` | Receiver sensitivity (dBm) | -82 |
+| `--gt`, `--gr` | Tx / Rx antenna gain (dBi) | 0 |
+| `--interactive` | Prompt for inputs | off |
+
+### BLE finder options
+
+`--time` scan seconds (default 8), `--n` path-loss exponent (default 2.5), `--loop` scan continuously.
+
+## Theory
+
+**Log-distance path loss** (tools 3 and 5):
+
+```
+PL(d) = PL(d0) + 10 * n * log10(d / d0) + sum(obstacle losses)    [dB]
+Pr(d) = Ptx + Gtx + Grx - PL(d)
+```
+
+- `PL(d0)` is free-space path loss at the 1 m reference distance.
+- `n` is the path-loss exponent: about 2 in free space and 2.5 to 4 indoors.
+- Maximum range is the distance where `Pr(d)` falls to the receiver sensitivity.
+
+**BLE distance estimate:** `d = 10 ** ((TxPower_1m - RSSI) / (10 * n))`
+
+**Channel congestion** (tool 1): 2.4 GHz channels are 5 MHz apart but about 20 MHz wide, so channels within 4 of each other overlap. Each access point adds interference to every overlapping channel, weighted by its signal strength. Only channels 1, 6 and 11 are recommended because they do not overlap.
+
+## Platform notes and limitations
+
+- **Windows:** `pywifi` works but may report WPA3 / Enterprise networks as "Unknown". `netsh` only gives signal as a percentage, so tool 2 converts it to approximate dBm. Bluetooth must be turned on for tool 5.
+- **Linux:** Needs root for `pywifi`. Tool 2 needs the `iw` package.
+- **macOS:** Recent versions removed the `airport` tool, so tools 1, 2 and 4 may return no data. Tools 3 and 5 work.
+- **Virtual machines** cannot scan Wi-Fi. Run on the host.
+- RSSI-based distances are rough estimates. Walls, furniture and people change real signals.
+
+## Testing
+
+See [docs/TESTING.md](docs/TESTING.md) for test cases and expected results.
+
+## Ethics
+
+Tool 4 is passive: it only reads what your adapter already receives. Only audit networks you own or are authorised to assess.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
