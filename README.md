@@ -17,7 +17,7 @@ Built as a Wireless Technologies mini-project. Each tool is a single, self-conta
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-username>/wireless-toolkit.git
+git clone https://github.com/Mitra-B/wireless-toolkit.git
 cd wireless-toolkit
 pip install -r requirements.txt
 python src/3_path_loss_simulator.py --interactive
