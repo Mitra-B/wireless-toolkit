@@ -1,4 +1,4 @@
-# Wireless Toolkit
+# Wireless Toolkit (Smart Wireless Network Management Platform)
 
 Five small Python tools for analyzing wireless networks: Wi-Fi channel congestion, live link quality, path-loss modelling, Wi-Fi security auditing and Bluetooth Low Energy (BLE) distance estimation.
 
